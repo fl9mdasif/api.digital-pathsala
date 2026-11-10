@@ -157,9 +157,23 @@ const ROWS = 4;
 const GAP_X = 20;
 const GAP_Y = 14;
 
+/** The look shared by student and teacher cards; the sheet renderer needs nothing else from a config. */
+export type VisualCfg = Omit<IdCardConfigData, 'show' | 'classDisplay' | 'sessionLabel' | 'qrMode' | 'qrData'> & {
+  show: { watermark: boolean; signatureFront: boolean; signatureBack: boolean };
+};
+
+/** One card ready to draw: the lines under the name and the QR text are worked out by the caller. */
+export interface SheetCard {
+  name: string;
+  lines: string[];
+  qr: string;
+  photoUrl?: string;
+}
+
 interface Ctx {
   doc: PDFKit.PDFDocument;
-  cfg: IdCardConfigData;
+  cfg: VisualCfg;
+  title: string;
   design: IdCardDesign;
   locale: Locale;
   schoolName: string;
@@ -174,9 +188,8 @@ const tone = (ctx: Ctx) =>
     ? { main: '#000000', text: '#000000', name: '#000000', border: '#000000', soft: '#555555' }
     : { main: ctx.cfg.themeColor, text: ctx.cfg.textColor, name: ctx.cfg.nameColor, border: ctx.cfg.themeColor, soft: '#555555' };
 
-const detailLines = (c: CardData, ctx: Ctx): string[] => {
-  const { cfg } = ctx;
-  const t = L[ctx.locale];
+const studentLines = (c: CardData, cfg: IdCardConfigData, locale: Locale): string[] => {
+  const t = L[locale];
   const s = cfg.show;
   const out = [`${t.id}: ${c.studentId}`];
   if (s.class) out.push(`${t.cls}: ${c.className}${s.section && cfg.classDisplay === 'class_section' && c.sectionName ? ` - ${c.sectionName}` : ''}`);
@@ -239,7 +252,7 @@ const drawSignature = (ctx: Ctx, x: number, y: number) => {
   doc.fillColor(c.soft).font('regular').fontSize(6.5).text(cfg.signatureTitle, x + CARD_W - 84, lineY + 2, { width: 74, align: 'center', lineBreak: false });
 };
 
-const drawFront = (ctx: Ctx, c: CardData, photo: Buffer | null, x: number, y: number) => {
+const drawFront = (ctx: Ctx, c: SheetCard, photo: Buffer | null, x: number, y: number) => {
   const { doc, cfg, design } = ctx;
   const t = L[ctx.locale];
   const col = tone(ctx);
@@ -252,10 +265,10 @@ const drawFront = (ctx: Ctx, c: CardData, photo: Buffer | null, x: number, y: nu
   if (design === 'modern') {
     doc.save().roundedRect(x, y, CARD_W, 38, 6).clip().rect(x, y, CARD_W, 38).fill(col.main).restore();
     doc.fillColor('#ffffff').font('bold').fontSize(cfg.fontSchool).text(ctx.schoolName, x + 6, y + 6, { width: CARD_W - 12, align: 'center', height: cfg.fontSchool + 3, ellipsis: true });
-    doc.font('regular').fontSize(cfg.fontAddress).text(ctx.address || t.title, x + 6, y + 8 + cfg.fontSchool + 2, { width: CARD_W - 12, align: 'center', height: cfg.fontAddress + 2, ellipsis: true });
+    doc.font('regular').fontSize(cfg.fontAddress).text(ctx.address || ctx.title, x + 6, y + 8 + cfg.fontSchool + 2, { width: CARD_W - 12, align: 'center', height: cfg.fontAddress + 2, ellipsis: true });
   } else {
     doc.fillColor(col.main).font('bold').fontSize(cfg.fontSchool).text(ctx.schoolName, x + 8, y + 9, { width: CARD_W - 16, align: 'center', height: cfg.fontSchool + 3, ellipsis: true });
-    doc.fillColor(col.soft).font('regular').fontSize(cfg.fontAddress).text(ctx.address || t.title, x + 8, y + 11 + cfg.fontSchool + 2, { width: CARD_W - 16, align: 'center', height: cfg.fontAddress + 2, ellipsis: true });
+    doc.fillColor(col.soft).font('regular').fontSize(cfg.fontAddress).text(ctx.address || ctx.title, x + 8, y + 11 + cfg.fontSchool + 2, { width: CARD_W - 16, align: 'center', height: cfg.fontAddress + 2, ellipsis: true });
     doc.moveTo(x + 10, y + 36).lineTo(x + CARD_W - 10, y + 36).lineWidth(design === 'mono' ? 1 : 0.6).stroke(col.border);
   }
 
@@ -266,7 +279,7 @@ const drawFront = (ctx: Ctx, c: CardData, photo: Buffer | null, x: number, y: nu
   const textX = design === 'classic' ? x + 12 : x + 72;
   const textW = design === 'classic' ? CARD_W - 84 : CARD_W - 80;
   doc.fillColor(col.name).font('bold').fontSize(cfg.fontDetails + 2).text(c.name, textX, top, { width: textW, height: cfg.fontDetails + 4, ellipsis: true });
-  const lines = detailLines(c, ctx);
+  const lines = c.lines;
   const lineH = Math.min(cfg.fontDetails + 3, 70 / Math.max(lines.length, 1));
   doc.fillColor(col.text).font('regular').fontSize(cfg.fontDetails);
   lines.forEach((line, i) => doc.text(line, textX, top + cfg.fontDetails + 6 + i * lineH, { width: textW, height: lineH, ellipsis: true, lineBreak: false }));
@@ -276,10 +289,10 @@ const drawFront = (ctx: Ctx, c: CardData, photo: Buffer | null, x: number, y: nu
   if (cfg.show.signatureFront) drawSignature(ctx, x, y);
 };
 
-const qrText = (c: CardData, ctx: Ctx) => {
-  if (ctx.cfg.qrMode === 'off') return '';
-  const fallback = ctx.cfg.qrMode === 'dynamic' ? '{student_id}' : '';
-  return fillTemplate(ctx.cfg.qrData || fallback, {
+const studentQr = (c: CardData, cfg: IdCardConfigData) => {
+  if (cfg.qrMode === 'off') return '';
+  const fallback = cfg.qrMode === 'dynamic' ? '{student_id}' : '';
+  return fillTemplate(cfg.qrData || fallback, {
     student_id: c.studentId,
     name: c.name,
     roll: c.roll,
@@ -295,7 +308,7 @@ const qrText = (c: CardData, ctx: Ctx) => {
   });
 };
 
-const drawBack = (ctx: Ctx, c: CardData, x: number, y: number) => {
+const drawBack = (ctx: Ctx, c: SheetCard, x: number, y: number) => {
   const { doc, cfg, design } = ctx;
   const t = L[ctx.locale];
   const col = tone(ctx);
@@ -310,7 +323,7 @@ const drawBack = (ctx: Ctx, c: CardData, x: number, y: number) => {
     doc.moveTo(x + 10, y + 22).lineTo(x + CARD_W - 10, y + 22).lineWidth(0.5).stroke(col.border);
   }
 
-  const qr = qrText(c, ctx);
+  const qr = c.qr;
   const textW = qr ? CARD_W - 84 : CARD_W - 24;
   doc.fillColor(col.text).font('regular').fontSize(cfg.fontDetails - 0.5).text(cfg.backTop || t.rules, x + 12, y + 30, { width: textW, height: 74, ellipsis: true });
   if (qr) drawQr(doc, qr, x + CARD_W - 66, y + 32, 54, col.text);
@@ -327,12 +340,13 @@ export interface RenderOptions {
   sample?: boolean;
 }
 
-export const renderCards = async (q: RenderOptions, locale: Locale) => {
-  const [cards, cfg, tenant] = await Promise.all([
-    q.sample ? Promise.resolve([SAMPLE_CARD]) : collect(q, locale),
-    getConfig(),
-    Tenant.findById(requireTenantId()).select('name nameBn contact.address').lean(),
-  ]);
+/** Lays cards out 8 to an A4 page, fronts then backs (backs mirrored for a two-sided printer). */
+export const renderSheet = async (
+  cards: SheetCard[],
+  cfg: VisualCfg,
+  o: { part: 'front' | 'back' | 'both'; design?: IdCardDesign; locale: Locale; title: string },
+): Promise<Buffer> => {
+  const tenant = await Tenant.findById(requireTenantId()).select('name nameBn contact.address').lean();
   const [photos, watermark, signature] = await Promise.all([
     Promise.all(cards.map((c) => loadPhoto(c.photoUrl))),
     cfg.show.watermark ? loadPng(cfg.watermarkUrl, 400) : Promise.resolve(null),
@@ -342,9 +356,10 @@ export const renderCards = async (q: RenderOptions, locale: Locale) => {
   const ctx: Ctx = {
     doc,
     cfg,
-    design: q.design ?? cfg.design,
-    locale,
-    schoolName: (locale === 'bn' && (tenant as any)?.nameBn) || (tenant as any)?.name || '',
+    title: o.title,
+    design: o.design ?? cfg.design,
+    locale: o.locale,
+    schoolName: (o.locale === 'bn' && (tenant as any)?.nameBn) || (tenant as any)?.name || '',
     address: (tenant as any)?.contact?.address ?? '',
     watermark,
     signature,
@@ -366,22 +381,28 @@ export const renderCards = async (q: RenderOptions, locale: Locale) => {
   };
   for (let start = 0; start < cards.length; start += perPage) {
     const chunk = cards.slice(start, start + perPage);
-    if (q.part !== 'back') {
+    if (o.part !== 'back') {
       newPage();
       chunk.forEach((c, i) => {
         const p = pos(i, false);
         drawFront(ctx, c, photos[start + i], p.x, p.y);
       });
     }
-    if (q.part !== 'front') {
+    if (o.part !== 'front') {
       newPage();
       chunk.forEach((c, i) => {
-        const p = pos(i, q.part === 'both');
+        const p = pos(i, o.part === 'both');
         drawBack(ctx, c, p.x, p.y);
       });
     }
   }
+  return pdfToBuffer(doc);
+};
 
+export const renderCards = async (q: RenderOptions, locale: Locale) => {
+  const [cards, cfg] = await Promise.all([q.sample ? Promise.resolve([SAMPLE_CARD]) : collect(q, locale), getConfig()]);
+  const sheet: SheetCard[] = cards.map((c) => ({ name: c.name, lines: studentLines(c, cfg, locale), qr: studentQr(c, cfg), photoUrl: c.photoUrl }));
+  const pdf = await renderSheet(sheet, cfg, { part: q.part, design: q.design, locale, title: L[locale].title });
   await writeAudit({ action: 'idCard.print', entityType: 'IdCard', entityId: requireTenantId(), after: { count: cards.length, part: q.part, sample: !!q.sample } });
-  return { pdf: await pdfToBuffer(doc), count: cards.length };
+  return { pdf, count: cards.length };
 };

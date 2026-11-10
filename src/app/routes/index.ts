@@ -43,6 +43,7 @@ import { routinePeriodRoutes } from '../modules/routinePeriod/routinePeriod.rout
 import { classRoutineRoutes } from '../modules/classRoutine/classRoutine.route';
 import { examRoutineRoutes } from '../modules/examRoutine/examRoutine.route';
 import { idCardRoutes } from '../modules/idCard/idCard.route';
+import { teacherIdCardRoutes } from '../modules/teacherIdCard/teacherIdCard.route';
 import { admitCardRoutes } from '../modules/admitCard/admitCard.route';
 import { resultReportRoutes } from '../modules/resultReport/resultReport.route';
 import { platformAuthRoutes } from '../modules/platform/platform.auth.route';
@@ -65,6 +66,7 @@ apiRouter.use('/routine-periods', routinePeriodRoutes);
 apiRouter.use('/class-routines', classRoutineRoutes);
 apiRouter.use('/exam-routines', examRoutineRoutes);
 apiRouter.use('/id-cards', idCardRoutes);
+apiRouter.use('/teacher-id-cards', teacherIdCardRoutes);
 apiRouter.use('/admit-cards', admitCardRoutes);
 apiRouter.use('/school', schoolRoutes);
 apiRouter.use('/sessions', sessionRoutes);
