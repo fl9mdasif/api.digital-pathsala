@@ -13,7 +13,7 @@ interface Auth {
   role: string;
 }
 
-const teacherFilter = async (auth: Auth) => {
+export const teacherFilter = async (auth: Auth) => {
   const scope = await scopeFor(auth);
   return scope.kind === 'teacher' ? teacherEnrolmentFilter(scope.pairs) : {};
 };

@@ -6,9 +6,10 @@ export const FONT_REGULAR = path.join(FONT_DIR, 'NotoSansBengali-Regular.ttf');
 export const FONT_BOLD = path.join(FONT_DIR, 'NotoSansBengali-Bold.ttf');
 
 /** A4 document with Noto Sans Bengali registered (it also covers Latin text) so Bangla shapes correctly. */
-export const createPdf = (opts: { margin?: number } = {}) => {
+export const createPdf = (opts: { margin?: number; layout?: 'portrait' | 'landscape' } = {}) => {
   const doc = new PDFDocument({
     size: 'A4',
+    layout: opts.layout ?? 'portrait',
     margin: opts.margin ?? 40,
     info: { Producer: 'School Management' },
   });
