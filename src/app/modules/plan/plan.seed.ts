@@ -82,7 +82,10 @@ export const DEFAULT_PLANS = [
 export const seedPlans = async () => {
   // drop legacy indexes that no longer match the new schema
   const col = Plan.collection;
-  const indexes = await col.indexes();
+  const indexes = await col.indexes().catch((e: { code?: number }) => {
+    if (e?.code === 26) return []; // NamespaceNotFound: collection not created yet
+    throw e;
+  });
   for (const idx of indexes) {
     const key = Object.keys(idx.key)[0];
     if (key !== '_id') await col.dropIndex(idx.name as string).catch(() => null);
