@@ -109,13 +109,13 @@ export const deleteLockRule = async (examId: string) => {
 
 // ---------------------------------------------------------------- lookups
 
-const loadExam = async (examId: string) => {
+export const loadExam = async (examId: string) => {
   const exam = await Exam.findById(examId).select('name classIds').lean();
   if (!exam) throw AppError.notFound('Exam not found');
   return exam as any;
 };
 
-const assertInExam = (exam: any, cards: CardData[]) => {
+export const assertInExam = (exam: any, cards: CardData[]) => {
   if (!exam.classIds?.length) return;
   const allowed = new Set(exam.classIds.map(String));
   if (cards.some((c) => !allowed.has(c.classId)))
