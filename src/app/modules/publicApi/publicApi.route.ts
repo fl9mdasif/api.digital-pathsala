@@ -4,7 +4,8 @@ import { catchAsync } from '../../lib/catchAsync';
 import { buildMeta, paginationQuery } from '../../lib/pagination';
 import { normalizeBdPhone } from '../../lib/phone';
 import { ok } from '../../lib/sendResponse';
-import { inquiryLimiter, publicLimiter } from '../../middlewares/rateLimit';
+import { inquiryLimiter, publicLimiter, resultLookupHourLimiter, resultLookupMinuteLimiter } from '../../middlewares/rateLimit';
+import { objectIdSchema } from '../../lib/objectId';
 import { tenantResolver } from '../../middlewares/tenantResolver';
 import { validateRequest } from '../../middlewares/validateRequest';
 import * as svc from './publicApi.service';
@@ -64,6 +65,38 @@ school.get(
   catchAsync(async (_req, res) => {
     cacheShort(res);
     ok(res, await svc.listPublicStaff());
+  }),
+);
+school.get(
+  '/stats',
+  catchAsync(async (_req, res) => {
+    cacheShort(res);
+    ok(res, await svc.publicStats());
+  }),
+);
+school.get(
+  '/classes',
+  catchAsync(async (_req, res) => {
+    cacheShort(res);
+    ok(res, await svc.publicClasses());
+  }),
+);
+school.get(
+  '/routine',
+  validateRequest({ query: z.strictObject({ sectionId: objectIdSchema }) }),
+  catchAsync(async (req, res) => {
+    cacheShort(res);
+    ok(res, await svc.publicRoutine((req.query as any).sectionId));
+  }),
+);
+school.post(
+  '/fees/lookup',
+  resultLookupMinuteLimiter,
+  resultLookupHourLimiter,
+  validateRequest({ body: z.strictObject({ studentId: z.string().trim().min(1).max(30), phone: z.string().trim().min(5).max(20) }) }),
+  catchAsync(async (req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
+    ok(res, await svc.publicFeeLookup(req.body));
   }),
 );
 school.post(

@@ -5,7 +5,21 @@ import { isValidLocalDate } from '../../lib/localDate';
 const url = mediaUrl;
 const color = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use a hex colour like #1d4ed8');
 
+export const QUICK_TILES = ['results', 'admission', 'notices', 'teachers', 'gallery', 'routine', 'feeLookup', 'contact'] as const;
+const message = z.strictObject({
+  name: z.string().trim().max(100),
+  designation: z.string().trim().max(100),
+  photoUrl: url.optional(),
+  text: z.string().trim().max(3000),
+});
+
 export const updateSiteBody = z.strictObject({
+  establishedYear: z.number().int().min(1000).max(2100).optional(),
+  eiin: z.string().trim().max(20).optional(),
+  secondMessage: message.optional(),
+  quickTiles: z.array(z.enum(QUICK_TILES)).max(8).refine((a) => new Set(a).size === a.length, 'Each tile once').optional(),
+  importantLinks: z.array(z.strictObject({ label: z.string().trim().min(1).max(80), url: z.string().url().max(300) })).max(12).optional(),
+  display: z.strictObject({ showStats: z.boolean(), showTicker: z.boolean() }).partial().optional(),
   theme: z
     .strictObject({ primaryColor: color.optional(), template: z.enum(['classic', 'modern']).optional() })
     .optional(),
@@ -66,6 +80,8 @@ export const updateSiteBody = z.strictObject({
       gallery: z.boolean(),
       admission: z.boolean(),
       results: z.boolean(),
+      routine: z.boolean(),
+      feeLookup: z.boolean(),
     })
     .partial()
     .optional(),
