@@ -32,3 +32,6 @@ export { Payment } from './modules/payment/payment.model';
 export { Exam } from './modules/exam/exam.model';
 export { Mark } from './modules/marks/mark.model';
 export { Result } from './modules/result/result.model';
+export { Designation } from './modules/designation/designation.model';
+export { Department } from './modules/department/department.model';
+export { Employee } from './modules/employee/employee.model';
