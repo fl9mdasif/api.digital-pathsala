@@ -4,6 +4,7 @@ import { dayOfWeek, isFuture } from '../../lib/localDate';
 import { requireTenantId } from '../../lib/tenantContext';
 import { writeAudit } from '../auditLog/auditLog.model';
 import { Employee } from '../employee/employee.model';
+import { TeacherLeave } from '../teacherLeave/teacherLeave.model';
 import { Tenant } from '../tenant/tenant.model';
 import { TeacherAttendance, TeacherAttendanceConfig } from './teacherAttendance.model';
 
@@ -41,15 +42,19 @@ export const saveConfig = async (input: { inTime: string; outTime: string; grace
 
 /** Every active employee with the status already recorded for the date (default present). */
 export const getSheet = async (date: string) => {
-  const [employees, existing] = await Promise.all([
+  const [employees, existing, leaves] = await Promise.all([
     Employee.find({ employmentStatus: { $in: ['active', 'on_leave'] } })
       .populate('userId', 'name')
       .populate('designationId', 'name nameBn')
       .sort({ employeeCode: 1 })
       .lean(),
     TeacherAttendance.find({ date }).lean(),
+    TeacherLeave.find({ status: 'approved', fromDate: { $lte: date }, toDate: { $gte: date } })
+      .select('employeeId')
+      .lean(),
   ]);
   const byEmployee = new Map(existing.map((r: any) => [String(r.employeeId), r]));
+  const onLeave = new Set(leaves.map((l: any) => String(l.employeeId)));
   return {
     date,
     taken: existing.length > 0,
@@ -62,7 +67,7 @@ export const getSheet = async (date: string) => {
         employeeCode: e.employeeCode,
         designation: e.designationId ? { name: e.designationId.name, nameBn: e.designationId.nameBn } : null,
         marked: !!r,
-        status: r?.status ?? 'present',
+        status: r?.status ?? (onLeave.has(String(e._id)) ? 'leave' : 'present'),
         checkIn: r?.checkIn,
         checkOut: r?.checkOut,
         note: r?.note,

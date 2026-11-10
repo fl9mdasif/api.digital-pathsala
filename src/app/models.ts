@@ -36,3 +36,4 @@ export { Designation } from './modules/designation/designation.model';
 export { Department } from './modules/department/department.model';
 export { Employee } from './modules/employee/employee.model';
 export { TeacherAttendance, TeacherAttendanceConfig } from './modules/teacherAttendance/teacherAttendance.model';
+export { TeacherLeave, TeacherLeaveConfig } from './modules/teacherLeave/teacherLeave.model';
