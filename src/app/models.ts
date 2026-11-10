@@ -39,3 +39,4 @@ export { TeacherAttendance, TeacherAttendanceConfig } from './modules/teacherAtt
 export { TeacherLeave, TeacherLeaveConfig } from './modules/teacherLeave/teacherLeave.model';
 export { RoutinePeriod } from './modules/routinePeriod/routinePeriod.model';
 export { ClassRoutineSlot } from './modules/classRoutine/classRoutine.model';
+export { ExamRoutineEntry } from './modules/examRoutine/examRoutine.model';

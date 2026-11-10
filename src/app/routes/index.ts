@@ -41,6 +41,7 @@ import { teacherAttendanceRoutes } from '../modules/teacherAttendance/teacherAtt
 import { teacherLeaveRoutes } from '../modules/teacherLeave/teacherLeave.route';
 import { routinePeriodRoutes } from '../modules/routinePeriod/routinePeriod.route';
 import { classRoutineRoutes } from '../modules/classRoutine/classRoutine.route';
+import { examRoutineRoutes } from '../modules/examRoutine/examRoutine.route';
 import { platformAuthRoutes } from '../modules/platform/platform.auth.route';
 import { platformRoutes } from '../modules/platform/platform.route';
 import { platformGuard } from '../middlewares/auth';
@@ -59,6 +60,7 @@ apiRouter.use('/teacher-attendance', teacherAttendanceRoutes);
 apiRouter.use('/teacher-leaves', teacherLeaveRoutes);
 apiRouter.use('/routine-periods', routinePeriodRoutes);
 apiRouter.use('/class-routines', classRoutineRoutes);
+apiRouter.use('/exam-routines', examRoutineRoutes);
 apiRouter.use('/school', schoolRoutes);
 apiRouter.use('/sessions', sessionRoutes);
 apiRouter.use('/classes', classRoutes);
