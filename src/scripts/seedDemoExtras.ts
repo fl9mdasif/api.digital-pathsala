@@ -24,6 +24,8 @@ import { TeacherLeave } from '../app/modules/teacherLeave/teacherLeave.model';
 import { getConfig as getIdCardConfig, saveConfig as saveIdCard } from '../app/modules/idCard/idCard.service';
 import { saveConfig as saveAdmitCard, saveLockRule } from '../app/modules/admitCard/admitCard.service';
 import { DEFAULT_ADMIT_CARD_CONFIG } from '../app/modules/admitCard/admitCard.model';
+import { DEFAULT_TESTIMONIAL_CONFIG, Testimonial } from '../app/modules/testimonial/testimonial.model';
+import { candidates as testimonialCandidates, issue as issueTestimonials, saveConfig as saveTestimonialConfig } from '../app/modules/testimonial/testimonial.service';
 import { Student } from '../app/modules/student/student.model';
 import { Guardian } from '../app/modules/guardian/guardian.model';
 import { User } from '../app/modules/user/user.model';
@@ -263,7 +265,39 @@ export const seedExtras = async (ctx: ExtrasContext) => {
   });
   // The Annual Examination has its own lockdown: dues above 500 Tk block the card, and an admin can still print it.
   await saveLockRule(String(exam._id), { active: true, maxDueAllowed: 50000, feeHeadIds: [], adminCanPrint: true });
-  log('ID card and admit card settings ready');
+  await saveTestimonialConfig({
+    ...DEFAULT_TESTIMONIAL_CONFIG,
+    language: 'bn',
+    layout: 'classic',
+    themeColor: '#0f766e',
+    sigLeftLabel: 'শ্রেণি শিক্ষক',
+    sigRightLabel: 'প্রধান শিক্ষক',
+  });
+  // A few issued testimonials for the highest class, so Generate and History have something to show.
+  if ((await Testimonial.countDocuments()) === 0) {
+    const top = ctx.classes[ctx.classes.length - 1];
+    const people = (await testimonialCandidates(top.sections[0].id)).slice(0, 3);
+    const places = [
+      { village: 'রামপুর', postOffice: 'রামপুর', upazila: 'চুয়াডাঙ্গা সদর', district: 'চুয়াডাঙ্গা' },
+      { village: 'কালীগঞ্জ', postOffice: 'কালীগঞ্জ', upazila: 'আলমডাঙ্গা', district: 'চুয়াডাঙ্গা' },
+      { village: 'বাঁশবাড়িয়া', postOffice: 'বাঁশবাড়িয়া', upazila: 'দামুড়হুদা', district: 'চুয়াডাঙ্গা' },
+    ];
+    if (people.length > 0)
+      await issueTestimonials({
+        issueDate: addDays(schoolDay(today), -7),
+        items: people.map((p, i) => ({
+          studentId: p.studentId,
+          exam: 'SSC',
+          passingYear: String(new Date().getFullYear()),
+          gpa: ['5.00', '4.89', '4.67'][i],
+          boardRoll: String(210400 + i * 17),
+          boardReg: String(1810000000 + i * 123),
+          conduct: 'ভালো',
+          ...places[i],
+        })),
+      });
+  }
+  log('ID card, admit card and testimonial settings ready');
 
   // Website: the sections the first seed left empty (no images on purpose)
   await PublicSite.updateOne(
