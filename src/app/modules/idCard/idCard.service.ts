@@ -148,7 +148,7 @@ const fetchImage = async (url: string | undefined, transform: string): Promise<B
   }
 };
 export const loadPhoto = (url?: string) => fetchImage(url, 'f_jpg,w_240,h_300,c_fill,g_face');
-const loadPng = (url: string | undefined, width: number) => fetchImage(url, `f_png,w_${width}`);
+export const loadPng = (url: string | undefined, width: number) => fetchImage(url, `f_png,w_${width}`);
 
 export const CARD_W = 242.6; // CR80, 85.6 mm
 export const CARD_H = 153; // 54 mm

@@ -22,7 +22,8 @@ import { TeacherAttendance } from '../app/modules/teacherAttendance/teacherAtten
 import { apply as applyLeave, decide as decideLeave, cancel as cancelLeave, saveAllowances } from '../app/modules/teacherLeave/teacherLeave.service';
 import { TeacherLeave } from '../app/modules/teacherLeave/teacherLeave.model';
 import { getConfig as getIdCardConfig, saveConfig as saveIdCard } from '../app/modules/idCard/idCard.service';
-import { saveConfig as saveAdmitCard } from '../app/modules/admitCard/admitCard.service';
+import { saveConfig as saveAdmitCard, saveLockRule } from '../app/modules/admitCard/admitCard.service';
+import { DEFAULT_ADMIT_CARD_CONFIG } from '../app/modules/admitCard/admitCard.model';
 import { Student } from '../app/modules/student/student.model';
 import { Guardian } from '../app/modules/guardian/guardian.model';
 import { User } from '../app/modules/user/user.model';
@@ -250,7 +251,18 @@ export const seedExtras = async (ctx: ExtrasContext) => {
     qrData: 'ID {student_id} | {name} | Class {class_name} | Roll {roll}',
     show: { ...idBase.show, bloodGroup: true, mother: true },
   });
-  await saveAdmitCard({ signatureTitle: 'Headmaster', instructions: 'Bring this card and your own pen to every paper. Mobile phones are not allowed in the exam hall.', blockIfDue: true, maxDueAllowed: 0 });
+  await saveAdmitCard({
+    ...DEFAULT_ADMIT_CARD_CONFIG,
+    signatureTitle: 'Headmaster',
+    instructions: 'Bring this card and your own pen to every paper. Mobile phones are not allowed in the exam hall.',
+    blockIfDue: true,
+    maxDueAllowed: 0,
+    themeColor: '#0f766e',
+    perPage: 2,
+    show: { ...DEFAULT_ADMIT_CARD_CONFIG.show, qr: true, sigClassTeacher: true, sigAccounts: true },
+  });
+  // The Annual Examination has its own lockdown: dues above 500 Tk block the card, and an admin can still print it.
+  await saveLockRule(String(exam._id), { active: true, maxDueAllowed: 50000, feeHeadIds: [], adminCanPrint: true });
   log('ID card and admit card settings ready');
 
   // Website: the sections the first seed left empty (no images on purpose)
