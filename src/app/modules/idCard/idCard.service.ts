@@ -41,7 +41,10 @@ export const saveConfig = async (input: Config) => {
   return input;
 };
 
-interface CardData {
+export interface CardData {
+  studentObjectId: string;
+  classId: string;
+  sectionId?: string;
   name: string;
   studentId: string;
   className: string;
@@ -53,7 +56,7 @@ interface CardData {
 }
 
 /** Cards for one section, or for a list of students, in class then roll order. */
-const collect = async (q: { sectionId?: string; studentIds?: string[] }, locale: Locale): Promise<CardData[]> => {
+export const collect = async (q: { sectionId?: string; studentIds?: string[] }, locale: Locale): Promise<CardData[]> => {
   const session = await currentSession();
   const filter: Record<string, unknown> = { sessionId: session._id, status: 'active' };
   if (q.sectionId) filter.sectionId = q.sectionId;
@@ -84,6 +87,9 @@ const collect = async (q: { sectionId?: string; studentIds?: string[] }, locale:
       const c: any = byClass.get(String(e.classId));
       const sec: any = e.sectionId ? bySection.get(String(e.sectionId)) : undefined;
       return {
+        studentObjectId: String(s._id),
+        classId: String(e.classId),
+        sectionId: e.sectionId ? String(e.sectionId) : undefined,
         name: locale === 'bn' && s.nameBn ? s.nameBn : s.name,
         studentId: s.studentId,
         className: (locale === 'bn' ? c?.nameBn : undefined) ?? c?.name ?? '-',
@@ -97,7 +103,7 @@ const collect = async (q: { sectionId?: string; studentIds?: string[] }, locale:
 };
 
 /** Photos come from Cloudinary only, resized and converted to JPEG there. Anything else shows an empty frame. */
-const loadPhoto = async (url?: string): Promise<Buffer | null> => {
+export const loadPhoto = async (url?: string): Promise<Buffer | null> => {
   const cloud = env.CLOUDINARY_CLOUD_NAME;
   if (!url || !cloud || !url.startsWith(`https://res.cloudinary.com/${cloud}/`) || !url.includes('/upload/')) return null;
   try {
