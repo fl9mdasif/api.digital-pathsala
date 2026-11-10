@@ -197,7 +197,7 @@ export const getMe = async (auth: {
           defaultFeeCycle: tenant.settings.defaultFeeCycle,
         },
         plan: plan
-          ? { code: plan.code, name: plan.name, features: plan.features, studentCap: tenant.studentCap }
+          ? { code: plan.slug, name: plan.name, features: plan.features, studentCap: tenant.studentCap }
           : null,
       },
     };

@@ -74,7 +74,7 @@ export const getUsage = async () => {
     students: await studentCounter.count(),
     studentCap: t.studentCap,
     staff: await User.countDocuments({ role: { $in: ['admin', 'teacher', 'accountant'] }, status: 'active' }),
-    plan: plan ? { code: plan.code, name: plan.name } : null,
+    plan: plan ? { code: plan.slug, name: plan.name } : null,
     status: effectiveStatus(t),
     trialEndsAt: t.trialEndsAt,
   };

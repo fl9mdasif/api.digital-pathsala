@@ -119,7 +119,6 @@ export const setTenantPlan = async (
     const plan = await Plan.findById(input.planId);
     if (!plan || !plan.isActive) throw AppError.badRequest('Plan not found or inactive');
     t.planId = plan._id;
-    t.studentCap = plan.studentCap; // copied from the plan at assignment
   }
   if (input.studentCap) t.studentCap = input.studentCap; // explicit override wins
   if (input.extendTrialDays) {
@@ -174,7 +173,6 @@ export const recordSubscriptionPayment = async (id: string, actorId: Types.Objec
     t.status = 'active';
     t.suspendedAt = undefined;
     t.planId = plan._id;
-    t.studentCap = plan.studentCap;
     await t.save();
     clearPublicCaches();
     invalidateTenantStatus(t._id);

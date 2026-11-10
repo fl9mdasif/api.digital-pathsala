@@ -10,7 +10,6 @@ import { writeAudit } from '../auditLog/auditLog.model';
 import { ClassModel } from '../class/class.model';
 import { Enrolment } from '../enrolment/enrolment.model';
 import { currentSession } from '../enrolment/enrolment.service';
-import { Plan } from '../plan/plan.model';
 import { Section } from '../section/section.model';
 import { createStudentRecord } from '../student/student.service';
 import { Student } from '../student/student.model';
@@ -109,9 +108,6 @@ export interface ImportError {
 
 const planAllowsImport = async () => {
   const t = await Tenant.findById(requireTenantId()).select('planId studentCap').lean();
-  const plan = t ? await Plan.findById(t.planId).lean() : null;
-  if (plan && !plan.features.csvImport)
-    throw new AppError(403, 'FEATURE_NOT_AVAILABLE', 'CSV import is not included in your plan');
   return t;
 };
 

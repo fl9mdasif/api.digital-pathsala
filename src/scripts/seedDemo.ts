@@ -21,7 +21,6 @@ import { FeeHead } from '../app/modules/feeHead/feeHead.model';
 import { FeeStructure } from '../app/modules/feeStructure/feeStructure.model';
 import { AcademicSession } from '../app/modules/academicSession/academicSession.model';
 import { Enrolment } from '../app/modules/enrolment/enrolment.model';
-import { Student } from '../app/modules/student/student.model';
 import { Invoice } from '../app/modules/invoice/invoice.model';
 import { Exam } from '../app/modules/exam/exam.model';
 import { Notice } from '../app/modules/notice/notice.model';
