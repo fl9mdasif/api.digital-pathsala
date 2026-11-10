@@ -4,6 +4,7 @@ import { ROLE } from '../../lib/roles';
 import { ok } from '../../lib/sendResponse';
 import { STUDENT_PLACEHOLDERS } from '../../lib/fillTemplate';
 import { authenticate, roleGuard } from '../../middlewares/auth';
+import { teacherPrintScope } from '../../middlewares/printScope';
 import { validateRequest } from '../../middlewares/validateRequest';
 import * as svc from './idCard.service';
 import * as v from './idCard.validation';
@@ -28,7 +29,8 @@ router.put(
  */
 router.get(
   '/students.pdf',
-  roleGuard(ROLE.ADMIN),
+  roleGuard(ROLE.ADMIN, ROLE.TEACHER),
+  teacherPrintScope,
   validateRequest({ query: v.printQuery }),
   catchAsync(async (req, res) => {
     const q = req.query as any;

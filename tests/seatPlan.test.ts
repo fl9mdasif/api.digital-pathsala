@@ -96,7 +96,8 @@ describe('seat plan endpoints', () => {
     await agent().post('/api/v1/students').set(x.h).send({ name: 'Other Kid', gender: 'male', dob: '2013-01-01', enrolment: { classId: other._id, sectionId: sec._id }, guardians: [] });
     expect((await get(`examId=${x.exam._id}&sectionId=${sec._id}`)).body.code).toBe('CLASS_NOT_IN_EXAM');
 
-    const teacher = authed((await login(t.slug, 'bn@example.com', 'Teacher#12345')).body.data.accessToken);
+    await agent().post('/api/v1/users').set(x.h).send({ role: 'teacher', name: 'Idle Teacher', email: 'idle@example.com', password: 'Teacher#12345' });
+    const teacher = authed((await login(t.slug, 'idle@example.com', 'Teacher#12345')).body.data.accessToken);
     expect((await agent().get(`/api/v1/seat-plans/assign?${q}`).set(teacher)).status).toBe(403);
     expect((await agent().get(`/api/v1/seat-plans/assign?${q}`)).status).toBe(401);
   });

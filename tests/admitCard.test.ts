@@ -94,7 +94,7 @@ describe('admit cards', () => {
   });
 
   it('rejects missing targets, other classes and non-admins', async () => {
-    const { x, q } = await setup();
+    const { x } = await setup();
     expect((await agent().get(`/api/v1/admit-cards/eligibility?examId=${x.exam._id}`).set(x.h)).status).toBe(400);
     expect((await agent().get(`/api/v1/admit-cards/eligibility?examId=64b000000000000000000001&sectionId=${x.sections[0]._id}`).set(x.h)).status).toBe(404);
 
@@ -104,7 +104,7 @@ describe('admit cards', () => {
     const wrong = await agent().get(`/api/v1/admit-cards/eligibility?examId=${x.exam._id}&sectionId=${sec._id}`).set(x.h);
     expect(wrong.body.code).toBe('CLASS_NOT_IN_EXAM');
 
-    expect((await agent().get(`/api/v1/admit-cards/eligibility?${q}`).set(x.banglaTok)).status).toBe(403);
+    expect((await agent().get('/api/v1/admit-cards/config').set(x.banglaTok)).status).toBe(403);
   });
 
   it('prints every design and page layout, and the sample for the settings preview', async () => {

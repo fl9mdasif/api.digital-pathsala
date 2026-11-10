@@ -122,7 +122,6 @@ describe('student ID card printing', () => {
     expect((await raw(`sectionId=${x.sections[0]._id}&part=side`)).status).toBe(400);
     const empty = (await agent().post('/api/v1/sections').set(x.h).send({ classId: x.cls._id, name: 'Z' })).body.data;
     expect((await raw(`sectionId=${empty._id}`)).body.code).toBe('NO_STUDENTS');
-    expect((await raw(`sectionId=${x.sections[0]._id}`, x.banglaTok)).status).toBe(403);
     expect((await agent().get('/api/v1/id-cards/config').set(x.banglaTok)).status).toBe(403);
   });
 });

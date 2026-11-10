@@ -3,12 +3,13 @@ import { catchAsync } from '../../lib/catchAsync';
 import { ROLE } from '../../lib/roles';
 import { ok } from '../../lib/sendResponse';
 import { authenticate, roleGuard } from '../../middlewares/auth';
+import { teacherPrintScope } from '../../middlewares/printScope';
 import { validateRequest } from '../../middlewares/validateRequest';
 import * as svc from './seatPlan.service';
 import * as v from './seatPlan.validation';
 
 const router = Router();
-router.use(authenticate(), roleGuard(ROLE.ADMIN));
+router.use(authenticate(), roleGuard(ROLE.ADMIN, ROLE.TEACHER), teacherPrintScope);
 
 /** The seat list as data: /seat-plans/assign?examId=...&sectionId=...[&room=Hall&seatsPerRoom=30&startSeat=1] */
 router.get('/assign', validateRequest({ query: v.assignQuery }), catchAsync(async (req, res) => ok(res, await svc.assign(req.query as any))));
