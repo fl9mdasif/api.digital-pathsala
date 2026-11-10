@@ -13,6 +13,7 @@ export interface IStudent {
   dob: string;
   photoUrl?: string;
   religion?: string;
+  bloodGroup?: 'A+' | 'A-' | 'AB+' | 'AB-' | 'B+' | 'B-' | 'O+' | 'O-';
   address?: string;
   birthRegistrationNo?: string;
   admittedOn: string;

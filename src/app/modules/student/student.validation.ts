@@ -39,6 +39,7 @@ const profile = {
   dob: date.refine((d) => d < todayLocal(), 'Date of birth must be in the past'),
   photoUrl: mediaUrl.optional(),
   religion: z.string().trim().max(40).optional(),
+  bloodGroup: z.enum(['A+', 'A-', 'AB+', 'AB-', 'B+', 'B-', 'O+', 'O-']).optional(),
   address: z.string().trim().max(300).optional(),
   birthRegistrationNo: z.string().trim().max(30).optional(),
   admittedOn: date.optional(),

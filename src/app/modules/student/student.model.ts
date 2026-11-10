@@ -12,6 +12,7 @@ const schema = createTenantSchema(
     dob: { type: String, required: true },
     photoUrl: String,
     religion: String,
+    bloodGroup: { type: String, enum: ['A+', 'A-', 'AB+', 'AB-', 'B+', 'B-', 'O+', 'O-'] },
     address: String,
     birthRegistrationNo: { type: String, select: false },
     admittedOn: { type: String, required: true },
