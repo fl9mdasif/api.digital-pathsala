@@ -28,3 +28,34 @@ export const resultLookupHourLimiter = rateLimit({
   message: json('RATE_LIMITED', 'Too many requests, try again later'),
 });
 export const publicLimiter = make(60_000, 120);
+
+/**
+ * Failed fee lookups for one student, from anywhere. The per-IP limits above stop one visitor, but a student ID is
+ * short and guessable, so many addresses together could still try phone numbers against it. Only failures count.
+ */
+export const makeFeeLookupStudentLimiter = (limit: number) =>
+  rateLimit({
+    windowMs: 15 * 60_000,
+    limit,
+    skipSuccessfulRequests: true,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    keyGenerator: (req) => `${String(req.params.slug ?? '')}|${String((req.body as any)?.studentId ?? '').trim().toLowerCase().slice(0, 40)}`,
+    message: json('RATE_LIMITED', 'Too many attempts for this student, try again later'),
+  });
+export const feeLookupStudentLimiter = makeFeeLookupStudentLimiter(env.isTest ? 10000 : 8);
+
+/** Online admission: a family applies once or twice, not dozens of times. */
+export const admissionApplyLimiter = make(60 * 60_000, 5, 'Too many applications, try again later');
+/** Photo upload signatures for applicants, per IP. */
+export const admissionUploadLimiter = make(60 * 60_000, 10, 'Too many uploads, try again later');
+/** Failed status lookups (or photo changes) for one application number, from anywhere. Only failures count. */
+export const admissionLookupLimiter = rateLimit({
+  windowMs: 15 * 60_000,
+  limit: env.isTest ? 10000 : 8,
+  skipSuccessfulRequests: true,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (req) => `${String(req.params.slug ?? '')}|${String((req.body as any)?.applicationNo ?? '').trim().toUpperCase().slice(0, 30)}`,
+  message: json('RATE_LIMITED', 'Too many attempts for this application, try again later'),
+});

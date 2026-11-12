@@ -4,13 +4,14 @@ import { catchAsync } from '../../lib/catchAsync';
 import { buildMeta, paginationQuery } from '../../lib/pagination';
 import { normalizeBdPhone } from '../../lib/phone';
 import { ok } from '../../lib/sendResponse';
-import { inquiryLimiter, publicLimiter, resultLookupHourLimiter, resultLookupMinuteLimiter } from '../../middlewares/rateLimit';
+import { feeLookupStudentLimiter, inquiryLimiter, publicLimiter, resultLookupHourLimiter, resultLookupMinuteLimiter } from '../../middlewares/rateLimit';
 import { objectIdSchema } from '../../lib/objectId';
 import { tenantResolver } from '../../middlewares/tenantResolver';
 import { validateRequest } from '../../middlewares/validateRequest';
 import * as svc from './publicApi.service';
 import { publicResultRoutes } from '../publicResult/publicResult.route';
 import { publishedExams } from '../publicResult/publicResult.service';
+import { publicAdmissionRoutes } from '../admission/admission.route';
 
 const router = Router();
 router.use(publicLimiter);
@@ -93,6 +94,7 @@ school.post(
   '/fees/lookup',
   resultLookupMinuteLimiter,
   resultLookupHourLimiter,
+  feeLookupStudentLimiter,
   validateRequest({ body: z.strictObject({ studentId: z.string().trim().min(1).max(30), phone: z.string().trim().min(5).max(20) }) }),
   catchAsync(async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
@@ -113,6 +115,7 @@ school.get(
   }),
 );
 school.use('/results', publicResultRoutes);
+school.use('/admissions', publicAdmissionRoutes);
 router.use('/schools/:slug', school);
 
 export const publicRoutes = router;

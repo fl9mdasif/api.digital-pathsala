@@ -9,3 +9,6 @@ coverage/
 
 .vercel
 .env*
+
+# local deploy helper with environment values
+push-env-to-vercel.ps1

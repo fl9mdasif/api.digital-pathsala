@@ -139,7 +139,7 @@ const fetchImage = async (url: string | undefined, transform: string): Promise<B
   const cloud = env.CLOUDINARY_CLOUD_NAME;
   if (!url || !cloud || !url.startsWith(`https://res.cloudinary.com/${cloud}/`) || !url.includes('/upload/')) return null;
   try {
-    const res = await fetch(url.replace('/upload/', `/upload/${transform}/`), { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(url.replace('/upload/', `/upload/${transform}/`), { signal: AbortSignal.timeout(4000), redirect: 'error' });
     if (!res.ok || !(res.headers.get('content-type') ?? '').startsWith('image/')) return null;
     const buf = Buffer.from(await res.arrayBuffer());
     return buf.length <= 2 * 1024 * 1024 ? buf : null;

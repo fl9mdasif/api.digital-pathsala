@@ -42,3 +42,4 @@ export { ClassRoutineSlot } from './modules/classRoutine/classRoutine.model';
 export { ExamRoutineEntry } from './modules/examRoutine/examRoutine.model';
 export { IdCardConfig } from './modules/idCard/idCard.model';
 export { AdmitCardConfig } from './modules/admitCard/admitCard.model';
+export { Admission } from './modules/admission/admission.model';
