@@ -133,7 +133,8 @@ describe('me', () => {
     expect(res.body.data.user.role).toBe('admin');
     expect(res.body.data.tenant).toMatchObject({ slug: t.slug, institutionType: 'madrasa', status: 'trial' });
     expect(res.body.data.tenant.terminology.teacher.en).toBe('Ustad');
-    expect(res.body.data.tenant.plan.features).toHaveProperty('marksheetPdf');
+    expect(Array.isArray(res.body.data.tenant.plan.features)).toBe(true);
+    expect(res.body.data.tenant.plan.code).toBe('free');
   });
 
   it('rejects missing and garbage tokens', async () => {

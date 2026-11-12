@@ -37,6 +37,10 @@ Multi-tenant School Management ERP backend for schools, madrasas and coaching ce
 | 5 | Exams and results: grading engine, marks entry, publish, correction, marksheet, public lookup | Done |
 | 6 | SMS and custom domains | **Dropped by the owner** (no paid SMS provider, no custom domains) |
 | 7 | Hardening: audit viewer, Docker, backups, load gates, OpenAPI, Sentry | Done, except staging and production deploy (owner task) |
+| R1 | HR and teachers, teacher attendance and leave, class and exam routines, ID and admit cards, fail list and tabulation | Done |
+| R4 | Show-ready demo seed, admin overview, seat plan, teacher ID card, testimonials | Done |
+| R5 | Public site fields, live stats, fee and admission lookups | Done; security audit pending |
+| R2, R3 | General accounts, combined exam, result summary, online admission, certificates, biometric, payment gateway and more | Not started. SMS is parked by the owner |
 
 Test and quality status is in [Testing](#7-testing).
 
@@ -47,8 +51,9 @@ Requirements: Node 22+, a MongoDB **replica set** (transactions need one: Atlas 
 ```bash
 cp .env.example .env        # then fill it in, see Configuration
 npm install
-npm run seed:plans          # starter / standard / large
+npm run seed:plans          # free / basic / pro
 npm run seed:admin          # platform owner from SUPER_ADMIN_EMAIL / SUPER_ADMIN_PASS
+npm run seed:demo           # optional: full demo school (admin@demo.school / Demo@1234, school demo-school)
 npm run dev                 # http://localhost:5000/api/v1/health
 ```
 
@@ -71,7 +76,7 @@ Useful commands:
 | `RUN_PERF=1 npx vitest run tests/perf.test.ts` | Opt-in performance gates |
 | `npm run docs:api` | Regenerate `docs/openapi.json` |
 | `npm run smoke` | Post-restore sanity check against `DATABASE_URL` |
-| `npm run seed:plans`, `npm run seed:admin` | Idempotent seeds |
+| `npm run seed:plans`, `npm run seed:admin`, `npm run seed:demo` | Idempotent seeds (demo school is skipped if it already exists) |
 
 ## 3. Configuration
 
@@ -160,9 +165,12 @@ Each module lives in `src/app/modules/<name>/`. Complex modules follow the six-f
 | Platform | `platform`, `plan`, `tenant`, `slug`, `auditLog`, `counter` |
 | Identity | `auth`, `user` |
 | Academic | `academicSession`, `class`, `section`, `subject`, `classSubject`, `student`, `guardian`, `enrolment`, `studentImport`, `promotion` |
+| HR | `employee`, `designation`, `department`, `teacherAttendance`, `teacherLeave` |
+| Routines | `routinePeriod`, `classRoutine`, `examRoutine`, `seatPlan` |
+| Accessories | `idCard`, `teacherIdCard`, `admitCard`, `testimonial` |
 | Daily operations | `attendance`, `notice`, `publicSite`, `staffProfile`, `inquiry`, `upload`, `publicApi`, `dashboard` |
 | Money | `feeHead`, `feeStructure`, `feeAdjustment`, `invoice`, `payment`, `ledger`, `receipt`, `feeReport` |
-| Exams | `gradingScale`, `exam`, `marks`, `result`, `marksheet`, `publicResult` |
+| Exams | `gradingScale`, `exam`, `marks`, `result`, `marksheet`, `resultReport`, `publicResult` |
 
 To add a module: create the folder, add its model to `src/app/models.ts` (so the isolation guards see it), mount its router in `src/app/routes/index.ts`, and add tests. Use `createTenantSchema` for tenant data; it applies tenant scoping, soft delete and audit stamping.
 

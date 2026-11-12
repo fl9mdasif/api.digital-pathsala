@@ -76,13 +76,14 @@ describe('platform console', () => {
     const p = await platformToken();
     const t = await registerTenant({ slug: 'old-name-school' });
     const plans = await agent().get('/api/v1/platform/plans').set(authed(p));
-    const large = plans.body.data.find((x: any) => x.code === 'large');
+    const large = plans.body.data.find((x: any) => x.slug === 'pro');
 
     const plan = await agent()
       .patch(`/api/v1/platform/tenants/${t.tenantId}/plan`)
       .set(authed(p))
       .send({ planId: large._id, extendTrialDays: 10 });
-    expect(plan.body.data.studentCap).toBe(1500);
+    expect(plan.status).toBe(200);
+    expect(plan.body.data.studentCap).toBe(150); // plans no longer carry a cap; only the explicit override changes it
     const cap = await agent()
       .patch(`/api/v1/platform/tenants/${t.tenantId}/plan`)
       .set(authed(p))
@@ -108,7 +109,7 @@ describe('platform console', () => {
     const p = await platformToken();
     const t = await registerTenant();
     const plans = await agent().get('/api/v1/platform/plans').set(authed(p));
-    const starter = plans.body.data.find((x: any) => x.code === 'starter');
+    const starter = plans.body.data.find((x: any) => x.slug === 'basic');
     const res = await agent()
       .post(`/api/v1/platform/tenants/${t.tenantId}/subscription-payments`)
       .set(authed(p))
@@ -132,11 +133,11 @@ describe('platform console', () => {
       .post('/api/v1/platform/plans')
       .set(authed(p))
       .send({
-        code: 'mini',
+        slug: 'mini',
         name: 'Mini',
-        priceMonthly: 80000,
-        studentCap: 50,
-        features: { customDomain: false, csvImport: false, marksheetPdf: true },
+        monthlyPrice: 800,
+        yearlyPrice: 8000,
+        features: ['100 students'],
       });
     expect(c.status).toBe(201);
     expect(
@@ -145,18 +146,18 @@ describe('platform console', () => {
           .post('/api/v1/platform/plans')
           .set(authed(p))
           .send({
-            code: 'mini',
+            slug: 'mini',
             name: 'Mini',
-            priceMonthly: 1,
-            studentCap: 1,
-            features: { customDomain: false, csvImport: false, marksheetPdf: true },
+            monthlyPrice: 1,
+            yearlyPrice: 1,
+            features: ['x'],
           })
       ).status,
     ).toBe(409);
     const u = await agent()
       .patch(`/api/v1/platform/plans/${c.body.data._id}`)
       .set(authed(p))
-      .send({ priceMonthly: 90000 });
-    expect(u.body.data.priceMonthly).toBe(90000);
+      .send({ monthlyPrice: 900 });
+    expect(u.body.data.monthlyPrice).toBe(900);
   });
 });

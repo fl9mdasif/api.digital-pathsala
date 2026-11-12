@@ -101,8 +101,8 @@ describe('public site', () => {
     const t = await registerTenant({ slug: 'findable-school' });
     await agent().post('/api/v1/site/publish').set(authed(t.token));
     const plans = await agent().get('/api/v1/public/platform/plans');
-    expect(plans.body.data.map((p: any) => p.code)).toEqual(
-      expect.arrayContaining(['starter', 'standard', 'large']),
+    expect(plans.body.data.map((p: any) => p.slug)).toEqual(
+      expect.arrayContaining(['free', 'basic', 'pro']),
     );
     const found = await agent().get('/api/v1/public/platform/find-school').query({ q: 'findable' });
     expect(found.body.data[0]).toEqual({
