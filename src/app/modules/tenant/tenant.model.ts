@@ -47,6 +47,8 @@ const schema = createPlatformSchema({
       default: 'roll_dob',
     },
     terminology: { type: Schema.Types.Mixed, default: {} },
+    /** Colour theme for the school's dashboard and website (client/app/globals.css [data-brand]). */
+    theme: { type: String, enum: ['forest', 'navy', 'maroon', 'royal', 'plum'], default: 'forest' },
   },
 });
 

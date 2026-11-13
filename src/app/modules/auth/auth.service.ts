@@ -195,6 +195,7 @@ export const getMe = async (auth: {
           locale: tenant.settings.locale,
           weekendDays: tenant.settings.weekendDays,
           defaultFeeCycle: tenant.settings.defaultFeeCycle,
+          theme: tenant.settings.theme ?? 'forest',
         },
         plan: plan
           ? { code: plan.slug, name: plan.name, features: plan.features, studentCap: tenant.studentCap }

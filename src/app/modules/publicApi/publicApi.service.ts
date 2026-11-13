@@ -28,7 +28,7 @@ const publishedSite = async () => {
 export const getSite = async () => {
   const site = await publishedSite();
   const tenant = await Tenant.findById(requireTenantId())
-    .select('name nameBn slug institutionType logoUrl contact.district contact.upazila settings.resultLookupMode')
+    .select('name nameBn slug institutionType logoUrl contact.district contact.upazila settings.resultLookupMode settings.theme')
     .lean();
   const v = site.sectionsVisible ?? {};
   return {
@@ -40,6 +40,7 @@ export const getSite = async () => {
       logoUrl: tenant?.logoUrl,
       district: tenant?.contact?.district,
       upazila: tenant?.contact?.upazila,
+      theme: tenant?.settings?.theme ?? 'forest',
     },
     theme: site.theme,
     hero: site.hero,

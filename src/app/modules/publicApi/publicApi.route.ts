@@ -12,6 +12,8 @@ import * as svc from './publicApi.service';
 import { publicResultRoutes } from '../publicResult/publicResult.route';
 import { publishedExams } from '../publicResult/publicResult.service';
 import { publicAdmissionRoutes } from '../admission/admission.route';
+import { publicGovNoticeRoutes } from '../govNotice/govNotice.route';
+import { publicSitePageRoutes } from '../sitePage/sitePage.route';
 
 const router = Router();
 router.use(publicLimiter);
@@ -40,6 +42,8 @@ router.get(
   validateRequest({ query: z.strictObject({ q: z.string().trim().min(2).max(60) }) }),
   catchAsync(async (req, res) => ok(res, await svc.findSchools((req.query as any).q))),
 );
+
+router.use('/gov-notices', publicGovNoticeRoutes);
 
 // Tenant level, resolved from the slug in the path
 const school = Router({ mergeParams: true });
@@ -116,6 +120,7 @@ school.get(
 );
 school.use('/results', publicResultRoutes);
 school.use('/admissions', publicAdmissionRoutes);
+school.use('/pages', publicSitePageRoutes);
 router.use('/schools/:slug', school);
 
 export const publicRoutes = router;

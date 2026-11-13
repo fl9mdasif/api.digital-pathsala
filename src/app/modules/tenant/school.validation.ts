@@ -30,4 +30,5 @@ export const updateSettingsBody = z.strictObject({
   defaultFeeCycle: z.enum(['monthly', 'term', 'yearly', 'one_time']).optional(),
   attendanceEditWindowHours: z.number().int().min(0).max(720).optional(),
   resultLookupMode: z.enum(['roll_dob', 'roll_only', 'student_id_dob']).optional(),
+  theme: z.enum(['forest', 'navy', 'maroon', 'royal', 'plum']).optional(),
 });

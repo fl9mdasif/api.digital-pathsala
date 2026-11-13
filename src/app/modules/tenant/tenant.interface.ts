@@ -28,6 +28,7 @@ export interface ITenant {
     attendanceEditWindowHours: number;
     resultLookupMode: 'roll_dob' | 'roll_only' | 'student_id_dob';
     terminology: Terminology;
+    theme?: 'forest' | 'navy' | 'maroon' | 'royal' | 'plum';
   };
   createdAt: Date;
   updatedAt: Date;

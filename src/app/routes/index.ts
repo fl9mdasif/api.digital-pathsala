@@ -53,12 +53,15 @@ import { resultReportRoutes } from '../modules/resultReport/resultReport.route';
 import { platformAuthRoutes } from '../modules/platform/platform.auth.route';
 import { platformRoutes } from '../modules/platform/platform.route';
 import { platformGuard } from '../middlewares/auth';
+import { govNoticeAdminRoutes } from '../modules/govNotice/govNotice.route';
+import { sitePageRoutes } from '../modules/sitePage/sitePage.route';
 
 /** Versioned API router. Modules mount here as they are built. */
 export const apiRouter = Router();
 
 apiRouter.use('/auth', authRoutes);
 apiRouter.use('/platform', platformAuthRoutes);
+apiRouter.use('/platform/gov-notices', ...platformGuard, govNoticeAdminRoutes);
 apiRouter.use('/platform', ...platformGuard, platformRoutes);
 apiRouter.use('/users', userRoutes);
 apiRouter.use('/designations', designationRoutes);
@@ -95,6 +98,7 @@ apiRouter.use('/site', siteRoutes);
 apiRouter.use('/staff-profiles', staffProfileRoutes);
 apiRouter.use('/inquiries', inquiryRoutes);
 apiRouter.use('/uploads', uploadRoutes);
+apiRouter.use('/site-pages', sitePageRoutes);
 apiRouter.use('/public', publicRoutes);
 apiRouter.use('/dashboard', dashboardRoutes);
 apiRouter.use('/audit-logs', auditLogRoutes);
