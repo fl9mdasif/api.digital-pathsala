@@ -29,8 +29,10 @@ export interface RegisterInput {
   password: string;
 }
 
-const TRIAL_DAYS = 30;
-const TRIAL_STUDENT_CAP = 150;
+// A new self-service signup always starts on Free. Its trial length comes from the plan's own
+// trialDays so the two can never drift apart; the student cap has no field on Plan, so it is set here.
+const FREE_PLAN_STUDENT_CAP = 50;
+const FALLBACK_TRIAL_DAYS = 15;
 
 /**
  * Creates tenant, admin and defaults in one transaction. Any failure leaves nothing behind.
@@ -47,12 +49,13 @@ export const registerInstitution = async (input: RegisterInput, userAgent?: stri
   }
   const slug = slugCheck.normalized;
 
-  let plan = await Plan.findOne({ code: 'standard' });
+  let plan = await Plan.findOne({ slug: 'free' });
   if (!plan) {
     await seedPlans();
-    plan = await Plan.findOne({ code: 'standard' });
+    plan = await Plan.findOne({ slug: 'free' });
   }
   if (!plan) throw new AppError(500, 'INTERNAL_ERROR', 'Plans are not configured');
+  const trialDays = plan.trialDays && plan.trialDays > 0 ? plan.trialDays : FALLBACK_TRIAL_DAYS;
 
   const preset = PRESETS[input.institutionType];
   const passwordHash = await hashPassword(input.password);
@@ -70,9 +73,9 @@ export const registerInstitution = async (input: RegisterInput, userAgent?: stri
             slug,
             institutionType: input.institutionType,
             status: 'trial',
-            trialEndsAt: new Date(Date.now() + TRIAL_DAYS * 86_400_000),
+            trialEndsAt: new Date(Date.now() + trialDays * 86_400_000),
             planId: plan!._id,
-            studentCap: TRIAL_STUDENT_CAP,
+            studentCap: FREE_PLAN_STUDENT_CAP,
             contact: { phone: input.phone, email: input.adminEmail, district: input.district },
             settings: { defaultFeeCycle: preset.defaultFeeCycle, terminology: preset.terminology },
           },

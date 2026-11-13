@@ -29,5 +29,6 @@ export const PLATFORM_MODELS = [
   'PlatformAdmin',
   'SubscriptionPayment',
   'RefreshToken',
+  'GovNotice',
   'TestPlatformThing',
 ];

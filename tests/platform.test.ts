@@ -83,7 +83,7 @@ describe('platform console', () => {
       .set(authed(p))
       .send({ planId: large._id, extendTrialDays: 10 });
     expect(plan.status).toBe(200);
-    expect(plan.body.data.studentCap).toBe(150); // plans no longer carry a cap; only the explicit override changes it
+    expect(plan.body.data.studentCap).toBe(50); // plans no longer carry a cap; only the explicit override changes it
     const cap = await agent()
       .patch(`/api/v1/platform/tenants/${t.tenantId}/plan`)
       .set(authed(p))
@@ -124,7 +124,7 @@ describe('platform console', () => {
     expect(res.status).toBe(201);
     const detail = await agent().get(`/api/v1/platform/tenants/${t.tenantId}`).set(authed(p));
     expect(detail.body.data.status).toBe('active');
-    expect(detail.body.data.studentCap).toBe(150);
+    expect(detail.body.data.studentCap).toBe(50);
   });
 
   it('manages plans', async () => {

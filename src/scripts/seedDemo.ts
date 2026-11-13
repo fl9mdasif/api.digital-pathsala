@@ -39,10 +39,10 @@ import { createNotice } from '../app/modules/notice/notice.service';
 import { FeeAdjustment } from '../app/modules/feeAdjustment/feeAdjustment.model';
 import { seedExtras } from './seedDemoExtras';
 
-const DEMO_SLUG = 'demo-school';
-const ADMIN_EMAIL = 'admin@demo.school';
-const ADMIN_PASSWORD = 'Demo@1234';
-const STAFF_PASSWORD = 'Demo@123';
+const DEMO_SLUG = process.env.DEMO_SLUG ?? 'demo-school';
+const ADMIN_EMAIL = process.env.DEMO_ADMIN_EMAIL ?? 'admin@demo.school';
+const ADMIN_PASSWORD = process.env.DEMO_ADMIN_PASSWORD ?? 'Demo@1234';
+const STAFF_PASSWORD = process.env.DEMO_STAFF_PASSWORD ?? 'Demo@123';
 const STUDENTS_PER_SECTION = 6;
 const EXAM_NAME = 'Half Yearly Examination';
 
@@ -110,23 +110,29 @@ const pseudo = (seed: number) => {
 
 const ensureTenant = async (): Promise<Types.ObjectId> => {
   const existing = await Tenant.findOne({ slug: DEMO_SLUG }).select('_id').lean();
+  let tenantId: Types.ObjectId;
   if (existing) {
     log('Demo tenant exists, resuming');
-    return existing._id as Types.ObjectId;
+    tenantId = existing._id as Types.ObjectId;
+  } else {
+    const { tenant } = await registerInstitution({
+      institutionName: 'Demo Model School',
+      institutionNameBn: 'ডেমো মডেল স্কুল',
+      institutionType: 'school',
+      slug: DEMO_SLUG,
+      phone: '01700000001',
+      district: 'Dhaka',
+      adminName: 'Demo Admin',
+      adminEmail: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD,
+    });
+    log('Demo tenant registered');
+    tenantId = tenant.id as Types.ObjectId;
   }
-  const { tenant } = await registerInstitution({
-    institutionName: 'Demo Model School',
-    institutionNameBn: 'ডেমো মডেল স্কুল',
-    institutionType: 'school',
-    slug: DEMO_SLUG,
-    phone: '01700000001',
-    district: 'Dhaka',
-    adminName: 'Demo Admin',
-    adminEmail: ADMIN_EMAIL,
-    password: ADMIN_PASSWORD,
-  });
-  log('Demo tenant registered');
-  return tenant.id as Types.ObjectId;
+  // A permanent public demo must never look "suspended" just because its original trial
+  // window ran out; force it active every run, whether freshly created or resumed.
+  await Tenant.updateOne({ _id: tenantId }, { $set: { status: 'active' } });
+  return tenantId;
 };
 
 const seedTenantData = async (admin: { userId: Types.ObjectId; role: string }) => {

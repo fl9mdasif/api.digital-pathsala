@@ -148,7 +148,7 @@ describe('school profile', () => {
       .send({ weekendDays: [5, 6], attendanceEditWindowHours: 48 });
     expect(s.body.data.weekendDays).toEqual([5, 6]);
     expect((await agent().get('/api/v1/school/usage').set(authed(t.token))).body.data).toMatchObject({
-      studentCap: 150,
+      studentCap: 50,
       students: 0,
     });
   });

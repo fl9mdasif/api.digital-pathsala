@@ -20,7 +20,10 @@ describe('register-institution', () => {
 
     const tenant = await Tenant.findOne({ slug: 'bright-model' });
     expect(tenant?.status).toBe('trial');
-    expect(tenant?.studentCap).toBe(150);
+    expect(tenant?.studentCap).toBe(50); // Free plan's cap; a new self-service signup always starts on Free
+    const daysLeft = Math.round((tenant!.trialEndsAt.getTime() - Date.now()) / 86_400_000);
+    expect(daysLeft).toBeGreaterThanOrEqual(14);
+    expect(daysLeft).toBeLessThanOrEqual(15);
     expect(tenant?.settings.terminology.class.en).toBe('Class');
 
     await runAsTenant(tenant!._id, async () => {
