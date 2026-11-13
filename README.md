@@ -93,7 +93,7 @@ All configuration is environment variables, validated with Zod at boot. The proc
 | `SUPER_ADMIN_EMAIL`, `SUPER_ADMIN_PASS` | for seeding | Password must be 12+ characters in production |
 | `PLATFORM_NAME`, `PLATFORM_DOMAIN` | no | The product name and domain are placeholders, never hard coded |
 | `RESERVED_SLUGS` | no | Extra reserved school slugs, comma separated |
-| `CORS_ORIGINS` | no | Dashboard origins allowed with credentials |
+| `CORS_ORIGINS` | no | Dashboard origins allowed with credentials. Default: localhost 3000/3001 and https://digital-pathsala.vercel.app |
 | `COOKIE_SECURE` | no | Defaults to true in production |
 | `UPLOAD_PROVIDER` | no | `mock` (default) or `cloudinary` |
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | with Cloudinary | Secret stays on the server |

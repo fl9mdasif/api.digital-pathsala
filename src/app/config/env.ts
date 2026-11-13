@@ -22,7 +22,8 @@ const schema = z.object({
   PLATFORM_NAME: z.string().default('xyz'),
   PLATFORM_DOMAIN: z.string().default('xyz.com'),
   RESERVED_SLUGS: z.string().default(''),
-  CORS_ORIGINS: z.string().default('http://localhost:3000'),
+  // The live client and local dev. Set CORS_ORIGINS in the host to add a custom domain.
+  CORS_ORIGINS: z.string().default('http://localhost:3000,http://localhost:3001,https://digital-pathsala.vercel.app'),
   COOKIE_SECURE: z.enum(['true', 'false']).optional(),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).optional(),
   SENTRY_DSN: z.string().url().optional(),
